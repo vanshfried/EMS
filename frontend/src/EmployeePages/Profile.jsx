@@ -97,7 +97,6 @@ const Profile = () => {
 
       {/* Content */}
       <main className={styles.content}>
-        
         {message && <p className={styles.message}>{message}</p>}
 
         {/* PROFILE (READ ONLY) */}
@@ -133,7 +132,7 @@ const Profile = () => {
 
             <input
               className={styles.input}
-              placeholder="Street"
+              placeholder="Street Address"
               value={formData.address.street || ""}
               onChange={(e) =>
                 handleChange("address", "street", e.target.value)
@@ -155,6 +154,14 @@ const Profile = () => {
                 value={formData.address.state || ""}
                 onChange={(e) =>
                   handleChange("address", "state", e.target.value)
+                }
+              />
+              <input
+                className={styles.input}
+                placeholder="Zip Code"
+                value={formData.address.zipCode || ""}
+                onChange={(e) =>
+                  handleChange("address", "zipCode", e.target.value)
                 }
               />
             </div>
@@ -193,9 +200,11 @@ const Profile = () => {
               className={styles.input}
               placeholder="Phone"
               value={formData.emergencyContact.phone || ""}
-              onChange={(e) =>
-                handleChange("emergencyContact", "phone", e.target.value)
-              }
+              maxLength={10}
+              onChange={(e) => {
+                const value = e.target.value.replace(/\D/g, ""); // remove non-digits
+                handleChange("emergencyContact", "phone", value);
+              }}
             />
 
             <button className={styles.button} disabled={saving}>

@@ -43,19 +43,15 @@ const employeeSchema = new Schema(
       city: String,
       state: String,
       zipCode: String,
-      country: String,
     },
 
     emergencyContact: {
-      name: String,
-      relation: String,
-      phone: String,
-    },
-
-    role: {
-      type: String,
-      enum: ["employee", "admin"],
-      default: "employee",
+      name: { type: String },
+      relation: { type: String },
+      phone: {
+        type: String,
+        match: [/^\d{10}$/, "Phone number must be exactly 10 digits"],
+      },
     },
 
     isActive: {
