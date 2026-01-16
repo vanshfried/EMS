@@ -13,6 +13,7 @@ const API = axios.create({
 export const adminLogin = (data) => API.post("/admin/login", data);
 export const getAdminProfile = () => API.get("/admin/profile");
 export const registerEmployee = (data) => API.post("/employee/register", data);
+export const getAllEmployees = () => API.get("/admin/employees");
 export const adminLogout = () => API.post("/admin/logout");
 
 export default API;

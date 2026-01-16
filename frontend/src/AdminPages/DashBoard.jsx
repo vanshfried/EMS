@@ -1,20 +1,25 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAdminProfile, adminLogout } from "./AdminApi";
+import { getAdminProfile, adminLogout, getAllEmployees } from "./AdminApi";
+import styles from "./AdminStyles/AdminDashboard.module.css";
 
-export default function Dashboard() {
+export default function AdminDashboard() {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
+  const [totalEmployees, setTotalEmployees] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchDashboardData = async () => {
       try {
-        const res = await getAdminProfile();
-        setEmail(res.data.email);
-      } catch (err) {
+        const profileRes = await getAdminProfile();
+        setEmail(profileRes.data.data.email);
+
+        const empRes = await getAllEmployees();
+        setTotalEmployees(empRes.data.data.length);
+      } catch {
         setError("Unauthorized");
         navigate("/admin/login");
       } finally {
@@ -22,58 +27,57 @@ export default function Dashboard() {
       }
     };
 
-    fetchProfile();
+    fetchDashboardData();
   }, [navigate]);
 
   const handleLogout = async () => {
     try {
-      await adminLogout(); // 🔥 backend clears cookie
-    } catch (err) {
-      // ignore
+      await adminLogout();
     } finally {
       navigate("/admin/login");
     }
   };
 
-  if (loading) return <p style={styles.center}>Loading...</p>;
-  if (error) return <p style={styles.error}>{error}</p>;
+  if (loading) return <p className={styles.center}>Loading dashboard...</p>;
+  if (error) return <p className={styles.error}>{error}</p>;
 
   return (
-    <div style={styles.container}>
-      <h1>Admin Dashboard</h1>
-      <p>
-        Logged in as: <strong>{email}</strong>
-      </p>
+    <div className={styles.adminDashboard}>
+      <header className={styles.header}>
+        <h2>{email}&apos;s Dashboard</h2>
+        <p>Administrator access</p>
+      </header>
 
-      <button style={styles.button} onClick={handleLogout}>
-        Logout
-      </button>
+      {/* SMALL STAT ON TOP */}
+      <div className={styles.topStat}>
+        <span>Total Employees</span>
+        <strong>{totalEmployees}</strong>
+      </div>
+
+      {/* MAIN ACTION CARDS */}
+      <div className={styles.tools}>
+        <div
+          className={styles.toolCard}
+          onClick={() => navigate("/admin/register-employee")}
+        >
+          ➕ Register Employee
+        </div>
+
+        <div
+          className={styles.toolCard}
+          onClick={() => navigate("/admin/employee-list")}
+        >
+          👥 View Employees
+        </div>
+      
+
+        <div
+          className={`${styles.toolCard} ${styles.logout}`}
+          onClick={handleLogout}
+        >
+          🚪 Logout
+        </div>
+      </div>
     </div>
   );
 }
-
-/* =====================
-   SIMPLE STYLES
-===================== */
-const styles = {
-  container: {
-    padding: "2rem",
-  },
-  center: {
-    textAlign: "center",
-    marginTop: "2rem",
-  },
-  error: {
-    color: "red",
-    textAlign: "center",
-  },
-  button: {
-    marginTop: "1.5rem",
-    padding: "10px 16px",
-    background: "#111827",
-    color: "#fff",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
-  },
-};

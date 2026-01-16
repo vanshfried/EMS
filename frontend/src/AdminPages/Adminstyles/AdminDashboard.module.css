@@ -1,0 +1,96 @@
+.adminDashboard {
+  padding: 30px;
+  min-height: 100vh;
+  background-color: #f9f9f9;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* HEADER */
+.header {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.header h2 {
+  color: #333;
+  margin-bottom: 6px;
+}
+
+.header p {
+  color: #666;
+  font-size: 0.95rem;
+}
+
+/* SMALL STAT ON TOP */
+.topStat {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.topStat span {
+  display: block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #777;
+}
+
+.topStat strong {
+  font-size: 1.4rem; /* 👈 SMALL */
+  font-weight: 600;
+  color: #111;
+}
+
+/* TOOL CARDS */
+.tools {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  max-width: 900px;
+  margin: 0 ;
+}
+
+.toolCard {
+  height: 120px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  padding: 20px;
+}
+
+.toolCard:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+  background-color: #f0f0f0;
+  color: #007bff;
+}
+
+/* LOGOUT */
+.logout {
+  color: #b91c1c;
+}
+
+.logout:hover {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+/* STATES */
+.center {
+  text-align: center;
+  margin-top: 3rem;
+}
+
+.error {
+  color: red;
+  text-align: center;
+}

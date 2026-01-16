@@ -6,6 +6,8 @@ import AdminLogin from "./AdminPages/Login";
 import AdminDashboard from "./AdminPages/DashBoard";
 import SecretRoute from "./AdminPages/SecretRoutes";
 import RegisterEmployee from "./AdminPages/RegisterEmployee";
+import EmployeeList from "./AdminPages/EmployeeList";
+import EmployeeDetails from "./AdminPages/EmployeeDetails";
 
 // Employee Pages
 import EmployeeProtectedRoute from "./EmployeePages/EmployeeProtectedRoute";
@@ -26,6 +28,8 @@ export default function App() {
             path="/admin/register-employee"
             element={<RegisterEmployee />}
           />
+          <Route path="/admin/employee-list" element={<EmployeeList />} />
+          <Route path="/admin/employees/:id" element={<EmployeeDetails />} />
         </Route>
 
         {/* Employee */}
