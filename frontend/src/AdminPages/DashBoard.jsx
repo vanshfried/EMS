@@ -69,14 +69,6 @@ export default function AdminDashboard() {
         >
           👥 View Employees
         </div>
-      
-
-        <div
-          className={`${styles.toolCard} ${styles.logout}`}
-          onClick={handleLogout}
-        >
-          🚪 Logout
-        </div>
       </div>
     </div>
   );
