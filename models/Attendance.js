@@ -11,23 +11,46 @@ const attendanceSchema = new Schema(
     date: {
       type: Date,
       required: true,
+      default: Date.now,
     },
 
-    checkIn: {
+    checkInTime: {
+      type: Date,
+      required: true,
+    },
+
+    checkOutTime: {
       type: Date,
     },
 
-    checkOut: {
-      type: Date,
+    workingHours: {
+      type: Number, // stored in hours (e.g. 8.5)
+      default: 0,
     },
 
     status: {
       type: String,
-      enum: ["present", "absent", "half-day"],
-      default: "present",
+      enum: ["Present", "Absent", "Half Day", "Leave"],
+      default: "Present",
+    },
+
+    remarks: {
+      type: String,
+      trim: true,
     },
   },
   { timestamps: true }
 );
+
+/**
+ * Automatically calculate working hours when checkOutTime is saved
+ */
+attendanceSchema.pre("save", function () {
+  if (this.checkInTime && this.checkOutTime) {
+    const diffMs = this.checkOutTime - this.checkInTime;
+    this.workingHours = +(diffMs / (1000 * 60 * 60)).toFixed(2);
+  }
+  
+});
 
 export default model("Attendance", attendanceSchema);

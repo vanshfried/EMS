@@ -7,7 +7,8 @@ import cookieParser from "cookie-parser";
 // Routes
 import adminRoutes from "./routes/AdminRoutes.js";
 import employeeRoutes from "./routes/EmployeeRoutes.js";
-
+// Attention 
+import attendanceRoutes from "./routes/AttendanceRoutes.js";
 dotenv.config();
 
 const app = express();
@@ -39,6 +40,8 @@ app.use("/admin", adminRoutes);
 
 // Employee routes
 app.use("/employee", employeeRoutes);
+// Attendance routes
+app.use("/attendance", attendanceRoutes);
 
 // Health check
 app.get("/", (req, res) => {
