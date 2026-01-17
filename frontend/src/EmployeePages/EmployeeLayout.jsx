@@ -11,7 +11,7 @@ export default function EmployeeLayout() {
     const loadProfile = async () => {
       try {
         const res = await getEmployeeProfile();
-        setEmployee(res.data);
+        setEmployee(res.data.data);
       } finally {
         setLoading(false);
       }

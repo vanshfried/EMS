@@ -14,7 +14,7 @@ export default function EmployeeDashboard() {
     const fetchProfile = async () => {
       try {
         const res = await getEmployeeProfile();
-        setEmployee(res.data);
+        setEmployee(res.data.data);
       } catch (err) {
         setError("Failed to load profile");
       } finally {
