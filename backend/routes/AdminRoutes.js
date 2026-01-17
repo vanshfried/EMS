@@ -85,7 +85,7 @@ router.get("/profile", adminAuth, (req, res) => {
 router.get("/employees", adminAuth, async (req, res) => {
   try {
     const employees = await Employee.find()
-      .select("fullName email createdAt")
+      .select("fullName email department designation isActive createdAt")
       .sort({ createdAt: -1 });
 
     res.status(200).json({
