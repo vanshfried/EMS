@@ -18,5 +18,17 @@ export const getEmployeeProfile = () => API.get("/employee/profile");
 export const updateEmployeeProfile = (data) =>
   API.put("/employee/profile", data);
 export const employeeLogout = () => API.post("/employee/logout");
+/* =====================
+   EMPLOYEE ATTENDANCE
+===================== */
+
+// ✅ Employee check-in
+export const employeeCheckIn = () => API.post("/attendance/check-in");
+
+// ✅ Employee check-out
+export const employeeCheckOut = () => API.post("/attendance/check-out");
+
+// ✅ Get logged-in employee attendance history
+export const getMyAttendance = () => API.get("/attendance/my");
 
 export default API;

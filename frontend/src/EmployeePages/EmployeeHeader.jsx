@@ -28,6 +28,9 @@ export default function EmployeeHeader({ employee }) {
         <Link to="/profile" className={styles.link}>
           Profile
         </Link>
+        <Link to="/attendance" className={styles.link}>
+          Attendance
+        </Link>
 
         <button onClick={handleLogout} className={styles.logout}>
           Logout

@@ -15,12 +15,14 @@ import EmployeeLayout from "./EmployeePages/EmployeeLayout";
 import EmployeeLogin from "./EmployeePages/Login";
 import EmployeeDashboard from "./EmployeePages/Dashboard";
 import Profile from "./EmployeePages/Profile";
+import Attendance from "./EmployeePages/Attendance";
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
         {/* Admin Protected + Layout */}
+        <Route path="/admin/login" element={<AdminLogin />} />
         <Route element={<SecretRoute />}>
           <Route element={<AdminLayout />}>
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
@@ -38,6 +40,7 @@ export default function App() {
           <Route element={<EmployeeLayout />}>
             <Route path="/" element={<EmployeeDashboard />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/attendance" element={<Attendance />} />
             {/* future employee routes go here */}
           </Route>
         </Route>
