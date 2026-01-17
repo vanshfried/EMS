@@ -69,6 +69,12 @@ export default function AdminDashboard() {
         >
           👥 View Employees
         </div>
+        <div
+          className={styles.toolCard}
+          onClick={() => navigate("/admin/attendance")}
+        >
+          📊 View Attendance
+        </div>
       </div>
     </div>
   );

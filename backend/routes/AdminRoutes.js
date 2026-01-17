@@ -5,6 +5,8 @@ import jwt from "jsonwebtoken";
 import Admin from "../models/Admin.js";
 import adminAuth from "../middleware/adminAuth.js";
 import Employee from "../models/Employee.js";
+import Attendance from "../models/Attendance.js";
+
 const router = Router();
 const isProd = process.env.NODE_ENV === "production";
 
@@ -40,11 +42,9 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    const token = jwt.sign(
-      { adminId: admin._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" } // shorter for admin security
-    );
+    const token = jwt.sign({ adminId: admin._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
 
     res.cookie("adminToken", token, {
       httpOnly: true,
@@ -79,9 +79,14 @@ router.get("/profile", adminAuth, (req, res) => {
   });
 });
 
+/* =====================
+   ADMIN → ALL EMPLOYEES
+===================== */
 router.get("/employees", adminAuth, async (req, res) => {
   try {
-    const employees = await Employee.find().sort({ createdAt: -1 });
+    const employees = await Employee.find()
+      .select("fullName email createdAt")
+      .sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
@@ -96,14 +101,13 @@ router.get("/employees", adminAuth, async (req, res) => {
     });
   }
 });
+
 /* =========================
-   ADMIN → GET SINGLE EMPLOYEE
+   ADMIN → SINGLE EMPLOYEE
 ========================= */
 router.get("/employees/:id", adminAuth, async (req, res) => {
   try {
-    const { id } = req.params;
-
-    const employee = await Employee.findById(id);
+    const employee = await Employee.findById(req.params.id);
 
     if (!employee) {
       return res.status(404).json({
@@ -117,9 +121,116 @@ router.get("/employees/:id", adminAuth, async (req, res) => {
       data: employee,
     });
   } catch (error) {
-    console.error("Get single employee error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+});
 
-    // Handles invalid ObjectId as well
+/* =========================
+   ADMIN → EMPLOYEE ATTENDANCE
+========================= */
+router.get("/employees/:id/attendance", adminAuth, async (req, res) => {
+  try {
+    const employee = await Employee.findById(req.params.id).select(
+      "fullName email",
+    );
+
+    if (!employee) {
+      return res.status(404).json({
+        success: false,
+        message: "Employee not found",
+      });
+    }
+
+    const attendance = await Attendance.find({ employee: employee._id }).sort({
+      date: -1,
+    });
+
+    res.status(200).json({
+      success: true,
+      employee,
+      count: attendance.length,
+      data: attendance,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+});
+
+/* =========================
+   ADMIN → TODAY ATTENDANCE
+========================= */
+router.get("/attendance/today", adminAuth, async (req, res) => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const employees = await Employee.find().select("fullName email");
+    const attendance = await Attendance.find({ date: today });
+
+    const attendanceMap = new Map(
+      attendance.map((a) => [a.employee.toString(), a]),
+    );
+
+    const result = employees.map((emp) => {
+      const record = attendanceMap.get(emp._id.toString());
+
+      return {
+        employee: emp,
+        attendance: record || {
+          employee: emp._id,
+          date: today,
+          status: "Absent",
+          workingHours: 0,
+          checkInTime: null,
+          checkOutTime: null,
+        },
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      count: result.length,
+      data: result,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+});
+
+/* =========================
+   ADMIN → ALL ATTENDANCE (PAGINATED)
+========================= */
+router.get("/attendance", adminAuth, async (req, res) => {
+  try {
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
+    const attendance = await Attendance.find()
+      .populate("employee", "fullName email")
+      .sort({ date: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Attendance.countDocuments();
+
+    res.status(200).json({
+      success: true,
+      page,
+      totalPages: Math.ceil(total / limit),
+      count: attendance.length,
+      data: attendance,
+    });
+  } catch (error) {
     res.status(500).json({
       success: false,
       message: "Server error",

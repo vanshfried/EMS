@@ -7,7 +7,7 @@ import cookieParser from "cookie-parser";
 // Routes
 import adminRoutes from "./routes/AdminRoutes.js";
 import employeeRoutes from "./routes/EmployeeRoutes.js";
-// Attention 
+// Attendance routes
 import attendanceRoutes from "./routes/AttendanceRoutes.js";
 dotenv.config();
 
