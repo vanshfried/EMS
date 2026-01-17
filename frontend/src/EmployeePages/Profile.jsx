@@ -27,7 +27,7 @@ const Profile = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       const res = await getEmployeeProfile();
-      const emp = res.data.employee || res.data;
+      const emp = res.data.data;
       setEmployee(emp);
 
       setFormData({
@@ -159,6 +159,7 @@ const Profile = () => {
               <input
                 className={styles.input}
                 placeholder="Zip Code"
+                maxLength={6}
                 value={formData.address.zipCode || ""}
                 onChange={(e) =>
                   handleChange("address", "zipCode", e.target.value)
