@@ -6,7 +6,7 @@ import {
 } from "./EmployeeApi";
 
 /* =====================
-   IST HELPERS (Frontend-only)
+   IST HELPERS
 ===================== */
 
 const IST_TIMEZONE = "Asia/Kolkata";
@@ -35,6 +35,17 @@ const getISTTimeString = (date) =>
   }).format(new Date(date));
 
 /* =====================
+   WORKING TIME FORMATTER
+===================== */
+
+const formatWorkingTime = (minutes) => {
+  if (!minutes || minutes <= 0) return "0h 0m";
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return `${h}h ${m}m`;
+};
+
+/* =====================
    COMPONENT
 ===================== */
 
@@ -50,12 +61,15 @@ const Attendance = () => {
 
       setAttendance(records);
 
-      // IST-based "today" detection
-      const todayIST = getISTDateString(new Date());
+      // ✅ Backend-aligned "today" detection
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
 
-      const todayRecord = records.find(
-        (a) => getISTDateString(a.date) === todayIST,
-      );
+      const todayRecord = records.find((a) => {
+        const d = new Date(a.date);
+        d.setHours(0, 0, 0, 0);
+        return d.getTime() === today.getTime();
+      });
 
       setTodayAttendance(todayRecord || null);
     } catch (error) {
@@ -97,7 +111,10 @@ const Attendance = () => {
 
       {/* ACTION BUTTONS */}
       <div style={{ marginBottom: "20px" }}>
-        <button onClick={handleCheckIn} disabled={loading || !!todayAttendance}>
+        <button
+          onClick={handleCheckIn}
+          disabled={loading || todayAttendance?.checkInTime}
+        >
           Check In
         </button>
 
@@ -113,16 +130,24 @@ const Attendance = () => {
       </div>
 
       {/* TODAY STATUS */}
-      {todayAttendance && (
+      {todayAttendance ? (
         <div style={{ marginBottom: "20px" }}>
           <strong>Today ({getISTDayName(todayAttendance.date)}):</strong>{" "}
-          Checked in at {getISTTimeString(todayAttendance.checkInTime)}
+          {todayAttendance.checkInTime
+            ? `Checked in at ${getISTTimeString(todayAttendance.checkInTime)}`
+            : "Not checked in yet"}
           {todayAttendance.checkOutTime && (
             <>
               {" | Checked out at "}
               {getISTTimeString(todayAttendance.checkOutTime)}
+              {" | Worked "}
+              {formatWorkingTime(todayAttendance.workingMinutes)}
             </>
           )}
+        </div>
+      ) : (
+        <div style={{ marginBottom: "20px", color: "red" }}>
+          <strong>Today:</strong> Not checked in yet
         </div>
       )}
 
@@ -133,7 +158,7 @@ const Attendance = () => {
             <th>Date</th>
             <th>Check In (IST)</th>
             <th>Check Out (IST)</th>
-            <th>Working Hours</th>
+            <th>Working Time</th>
             <th>Status</th>
           </tr>
         </thead>
@@ -158,7 +183,7 @@ const Attendance = () => {
                 <td>
                   {a.checkOutTime ? getISTTimeString(a.checkOutTime) : "-"}
                 </td>
-                <td>{a.workingHours || 0}</td>
+                <td>{formatWorkingTime(a.workingMinutes)}</td>
                 <td>{a.status}</td>
               </tr>
             ))

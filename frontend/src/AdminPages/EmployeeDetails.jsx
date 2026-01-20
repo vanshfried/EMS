@@ -3,27 +3,59 @@ import { useParams, useNavigate } from "react-router-dom";
 import API from "./AdminApi";
 import styles from "./AdminStyles/EmployeeDetails.module.css";
 
+/* =====================
+   HELPERS
+===================== */
+
+const formatTime = (date) => {
+  if (!date) return "—";
+  return new Date(date).toLocaleTimeString("en-IN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  });
+};
+
+const formatWorkingTime = (minutes) => {
+  if (!minutes || minutes <= 0) return "0h 0m";
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return `${h}h ${m}m`;
+};
+
+/* =====================
+   COMPONENT
+===================== */
+
 export default function EmployeeDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [employee, setEmployee] = useState(null);
+  const [attendance, setAttendance] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchEmployee = async () => {
+    const fetchData = async () => {
       try {
-        const res = await API.get(`/admin/employees/${id}`);
-        setEmployee(res.data.data);
+        const [empRes, attRes] = await Promise.all([
+          API.get(`/admin/employees/${id}`),
+          API.get(`/admin/employees/${id}/attendance`),
+        ]);
+
+        setEmployee(empRes.data.data);
+        setAttendance(attRes.data.data || []);
       } catch (err) {
+        console.error(err);
         setError("Failed to load employee details");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchEmployee();
+    fetchData();
   }, [id]);
 
   if (loading) {
@@ -40,12 +72,16 @@ export default function EmployeeDetails() {
 
   return (
     <div className={styles.container}>
-      <button className={styles.backBtn} onClick={() => navigate("/admin/employee-list")}>
+      <button
+        className={styles.backBtn}
+        onClick={() => navigate("/admin/employee-list")}
+      >
         ← Back
       </button>
 
       <h2>Employee Details</h2>
 
+      {/* BASIC DETAILS */}
       <div className={styles.card}>
         <section>
           <h3>Basic Information</h3>
@@ -111,6 +147,57 @@ export default function EmployeeDetails() {
             <strong>Registered By:</strong> {employee.createdByAdminEmail}
           </p>
         </section>
+      </div>
+
+      {/* ATTENDANCE DETAILS */}
+      <div className={styles.attendanceSection}>
+        <h3 className={styles.attendanceTitle}>Attendance History</h3>
+
+        <div className={styles.tableWrapper}>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Working Time</th>
+                <th>Check In</th>
+                <th>Check Out</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {attendance.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className={styles.center}>
+                    No attendance records
+                  </td>
+                </tr>
+              ) : (
+                attendance.map((a) => (
+                  <tr key={a._id}>
+                    <td>{new Date(a.date).toLocaleDateString("en-IN")}</td>
+                    <td
+                      className={
+                        a.status === "Present"
+                          ? styles.present
+                          : a.status === "Half Day"
+                            ? styles.halfDay
+                            : a.status === "Leave"
+                              ? styles.leave
+                              : styles.absent
+                      }
+                    >
+                      {a.status}
+                    </td>
+                    <td>{formatWorkingTime(a.workingMinutes)}</td>
+                    <td>{formatTime(a.checkInTime)}</td>
+                    <td>{formatTime(a.checkOutTime)}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

@@ -1,0 +1,92 @@
+.container {
+  padding: 24px;
+  background-color: #f6f7fb;
+  min-height: 100vh;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #1f2937;
+}
+
+/* Card */
+.card {
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  overflow-x: auto;
+}
+
+/* Table */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 900px;
+}
+
+.table thead {
+  background-color: #f1f5f9;
+}
+
+.table th {
+  padding: 14px;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.table td {
+  padding: 14px;
+  font-size: 14px;
+  color: #374151;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.table tr:hover {
+  background-color: #f9fafb;
+}
+
+/* Empty / Loading */
+.centerText {
+  text-align: center;
+  margin-top: 40px;
+  font-size: 15px;
+  color: #6b7280;
+}
+
+.errorText {
+  color: #dc2626;
+}
+
+/* Status badges */
+.status {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.present {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.absent {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.halfDay {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.leave {
+  background-color: #e0e7ff;
+  color: #3730a3;
+}

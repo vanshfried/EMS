@@ -9,7 +9,8 @@ import RegisterEmployee from "./AdminPages/RegisterEmployee";
 import EmployeeList from "./AdminPages/EmployeeList";
 import EmployeeDetails from "./AdminPages/EmployeeDetails";
 import AdminLayout from "./AdminPages/AdminLayout";
-import AdminAttendance from "./AdminPages/Attendance";
+import AdminAttendance from "./AdminPages/DailyAttendance";
+import AdminAllAttendance from "./AdminPages/AdminAllAttendance";
 
 // Employee Pages
 import EmployeeProtectedRoute from "./EmployeePages/EmployeeProtectedRoute";
@@ -35,6 +36,10 @@ export default function App() {
             <Route path="/admin/employee-list" element={<EmployeeList />} />
             <Route path="/admin/employees/:id" element={<EmployeeDetails />} />
             <Route path="/admin/attendance" element={<AdminAttendance />} />
+            <Route
+              path="/admin/all-attendance"
+              element={<AdminAllAttendance />}
+            />
           </Route>
         </Route>
 

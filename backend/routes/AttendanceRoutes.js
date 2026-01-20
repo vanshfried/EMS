@@ -12,21 +12,26 @@ router.post("/check-in", employeeAuth, async (req, res) => {
   try {
     const employeeId = req.employee._id;
 
+    // Normalize today to midnight
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    // ❌ Prevent duplicate check-in
     const existingAttendance = await Attendance.findOne({
       employee: employeeId,
       date: today,
     });
 
     if (existingAttendance) {
-      return res.status(400).json({ message: "Already checked in today" });
+      return res.status(400).json({
+        message: "Already checked in today",
+      });
     }
 
+    // ✅ Employee has NO control over status / minutes
     const attendance = await Attendance.create({
       employee: employeeId,
-      date: today, // ✅ IMPORTANT
+      date: today,
       checkInTime: new Date(),
     });
 
@@ -51,6 +56,7 @@ router.post("/check-out", employeeAuth, async (req, res) => {
   try {
     const employeeId = req.employee._id;
 
+    // Normalize today to midnight
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -71,7 +77,10 @@ router.post("/check-out", employeeAuth, async (req, res) => {
       });
     }
 
+    // ✅ Set checkout time only
     attendance.checkOutTime = new Date();
+
+    // 🔒 workingMinutes & status handled by schema
     await attendance.save();
 
     res.json({
@@ -99,6 +108,7 @@ router.get("/my", employeeAuth, async (req, res) => {
 
     res.json({ attendance });
   } catch (error) {
+    console.error("Fetch attendance error:", error);
     res.status(500).json({
       message: "Failed to fetch attendance",
       error: error.message,

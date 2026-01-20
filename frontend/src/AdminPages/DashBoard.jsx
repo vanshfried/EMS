@@ -73,7 +73,13 @@ export default function AdminDashboard() {
           className={styles.toolCard}
           onClick={() => navigate("/admin/attendance")}
         >
-          📊 View Attendance
+          📊 View Daily Attendance
+        </div>
+        <div
+          className={styles.toolCard}
+          onClick={() => navigate("/admin/all-attendance")}
+        >
+          📊 View All Attendance
         </div>
       </div>
     </div>
