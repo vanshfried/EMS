@@ -9,6 +9,9 @@ import adminRoutes from "./routes/AdminRoutes.js";
 import employeeRoutes from "./routes/EmployeeRoutes.js";
 // Attendance routes
 import attendanceRoutes from "./routes/AttendanceRoutes.js";
+// Leave routes
+import leaveRoutes from "./routes/leaveRoutes.js";
+
 dotenv.config();
 
 const app = express();
@@ -42,6 +45,8 @@ app.use("/admin", adminRoutes);
 app.use("/employee", employeeRoutes);
 // Attendance routes
 app.use("/attendance", attendanceRoutes);
+// Leave routes
+app.use("/leaves", leaveRoutes);
 
 // Health check
 app.get("/", (req, res) => {

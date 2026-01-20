@@ -5,6 +5,7 @@ import Admin from "../models/Admin.js";
 import adminAuth from "../middleware/adminAuth.js";
 import Employee from "../models/Employee.js";
 import Attendance from "../models/Attendance.js";
+import Leave from "../models/Leave.js";
 
 const router = Router();
 const isProd = process.env.NODE_ENV === "production";
@@ -292,6 +293,143 @@ router.patch("/attendance/:attendanceId", adminAuth, async (req, res) => {
     });
   }
 });
+
+/* =========================
+   ADMIN → ALL LEAVES
+========================= */
+router.get("/leaves", adminAuth, async (req, res) => {
+  try {
+    const leaves = await Leave.find()
+      .populate("employee", "fullName email department designation")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: leaves.length,
+      data: leaves,
+    });
+  } catch (error) {
+    console.error("Get all leaves error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+});
+
+/* =========================
+   ADMIN → SINGLE LEAVE
+========================= */
+router.get("/leaves/:id", adminAuth, async (req, res) => {
+  try {
+    const leave = await Leave.findById(req.params.id).populate(
+      "employee",
+      "fullName email department designation",
+    );
+
+    if (!leave) {
+      return res.status(404).json({
+        success: false,
+        message: "Leave not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: leave,
+    });
+  } catch (error) {
+    console.error("Get leave error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+});
+
+/* =========================
+   ADMIN → REVIEW LEAVE
+   PATCH /api/admin/leaves/:leaveId
+========================= */
+router.patch("/leaves/:leaveId", adminAuth, async (req, res) => {
+  try {
+    const { status, adminRemarks } = req.body;
+
+    if (!["Approved", "Rejected"].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid status value",
+      });
+    }
+
+    const leave = await Leave.findById(req.params.leaveId);
+
+    if (!leave) {
+      return res.status(404).json({
+        success: false,
+        message: "Leave request not found",
+      });
+    }
+
+    if (leave.status !== "Pending") {
+      return res.status(400).json({
+        success: false,
+        message: "Leave already reviewed",
+      });
+    }
+
+    leave.status = status;
+    leave.adminRemarks = adminRemarks || null;
+    leave.reviewedBy = req.admin.email;
+    leave.reviewedAt = new Date();
+
+    await leave.save();
+
+    res.status(200).json({
+      success: true,
+      message: `Leave ${status.toLowerCase()} successfully`,
+      data: leave,
+    });
+  } catch (error) {
+    console.error("Review leave error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+});
+/* =========================
+   ADMIN → LEAVES BY STATUS
+========================= */
+router.get("/leaves/status/:status", adminAuth, async (req, res) => {
+  try {
+    const { status } = req.params;
+
+    if (!["Pending", "Approved", "Rejected"].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid status",
+      });
+    }
+
+    const leaves = await Leave.find({ status })
+      .populate("employee", "fullName email department");
+
+    res.status(200).json({
+      success: true,
+      count: leaves.length,
+      data: leaves,
+    });
+  } catch (error) {
+    console.error("Get leaves by status error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+});
+ 
+
 
 /* =====================
    ADMIN LOGOUT
