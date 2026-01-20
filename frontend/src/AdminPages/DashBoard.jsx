@@ -1,24 +1,20 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAdminProfile, adminLogout, getAllEmployees } from "./AdminApi";
+import { getAdminProfile, adminLogout } from "./AdminApi";
 import styles from "./AdminStyles/AdminDashboard.module.css";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
-  const [totalEmployees, setTotalEmployees] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
+    const fetchProfile = async () => {
       try {
-        const profileRes = await getAdminProfile();
-        setEmail(profileRes.data.data.email);
-
-        const empRes = await getAllEmployees();
-        setTotalEmployees(empRes.data.data.length);
+        const res = await getAdminProfile();
+        setEmail(res.data.data.email);
       } catch {
         setError("Unauthorized");
         navigate("/admin/login");
@@ -27,7 +23,7 @@ export default function AdminDashboard() {
       }
     };
 
-    fetchDashboardData();
+    fetchProfile();
   }, [navigate]);
 
   const handleLogout = async () => {
@@ -38,50 +34,47 @@ export default function AdminDashboard() {
     }
   };
 
-  if (loading) return <p className={styles.center}>Loading dashboard...</p>;
+  if (loading) return <p className={styles.center}>Loading dashboard…</p>;
   if (error) return <p className={styles.error}>{error}</p>;
 
   return (
     <div className={styles.adminDashboard}>
-      <header className={styles.header}>
-        <h2>{email}&apos;s Dashboard</h2>
-        <p>Administrator access</p>
-      </header>
+      {/* TOP BAR */}
 
-      {/* SMALL STAT ON TOP */}
-      <div className={styles.topStat}>
-        <span>Total Employees</span>
-        <strong>{totalEmployees}</strong>
-      </div>
-
-      {/* MAIN ACTION CARDS */}
-      <div className={styles.tools}>
+      {/* ACTION GRID */}
+      <section className={styles.tools}>
         <div
           className={styles.toolCard}
           onClick={() => navigate("/admin/register-employee")}
         >
-          ➕ Register Employee
+          <h3>Register Employee</h3>
+          <p>Add a new employee to the system</p>
         </div>
 
         <div
           className={styles.toolCard}
           onClick={() => navigate("/admin/employee-list")}
         >
-          👥 View Employees
+          <h3>View Employees</h3>
+          <p>Manage and review all employees</p>
         </div>
+
         <div
           className={styles.toolCard}
           onClick={() => navigate("/admin/attendance")}
         >
-          📊 View Daily Attendance
+          <h3>Daily Attendance</h3>
+          <p>Check today’s attendance records</p>
         </div>
+
         <div
           className={styles.toolCard}
           onClick={() => navigate("/admin/all-attendance")}
         >
-          📊 View All Attendance
+          <h3>Attendance History</h3>
+          <p>View attendance for all dates</p>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

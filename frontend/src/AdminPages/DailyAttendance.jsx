@@ -23,6 +23,22 @@ const formatTime = (date) => {
   });
 };
 
+const formatTodayDate = () => {
+  const today = new Date();
+
+  const day = today.toLocaleDateString("en-IN", {
+    weekday: "long",
+  });
+
+  const date = today.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+
+  return `${day}, ${date}`;
+};
+
 /* =====================
    COMPONENT
 ===================== */
@@ -50,7 +66,7 @@ const Attendance = () => {
   }, []);
 
   if (loading) {
-    return <p className={`${styles.centerText}`}>Loading attendance...</p>;
+    return <p className={styles.centerText}>Loading attendance...</p>;
   }
 
   if (error) {
@@ -62,6 +78,7 @@ const Attendance = () => {
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>Today’s Attendance</h1>
+      <p className={styles.date}>{formatTodayDate()}</p>
 
       <div className={styles.card}>
         <table className={styles.table}>

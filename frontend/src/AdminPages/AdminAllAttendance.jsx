@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { getAllAttendance } from "../AdminPages/AdminApi";
 import styles from "./AdminStyles/AdminAllAttendance.module.css";
 
@@ -33,7 +33,8 @@ const AdminAllAttendance = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  const fetchAttendance = async (pageNumber = 1) => {
+  /* -------- API CALL (memoized) -------- */
+  const fetchAttendance = useCallback(async (pageNumber) => {
     try {
       setLoading(true);
       const res = await getAllAttendance({
@@ -41,102 +42,113 @@ const AdminAllAttendance = () => {
         limit: 20,
       });
 
-      setAttendance(res.data.data || []);
-      setPage(res.data.page);
-      setTotalPages(res.data.totalPages);
+      setAttendance(res?.data?.data || []);
+      setTotalPages(res?.data?.totalPages || 1);
     } catch (error) {
       console.error("Failed to fetch attendance:", error);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
+  /* -------- Fetch on page change -------- */
   useEffect(() => {
     fetchAttendance(page);
-  }, [page]);
+  }, [page, fetchAttendance]);
+
+  /* -------- Memoized formatted data -------- */
+  const formattedAttendance = useMemo(() => {
+    return attendance.map((item) => ({
+      id: item._id,
+      name: item.employee?.fullName || "—",
+      email: item.employee?.email || "—",
+      date: item.date ? new Date(item.date).toLocaleDateString("en-IN") : "—",
+      status: item.status,
+      workingTime: formatWorkingTime(item.workingMinutes),
+      checkIn: formatTime(item.checkInTime),
+      checkOut: formatTime(item.checkOutTime),
+    }));
+  }, [attendance]);
 
   return (
     <div className={styles.container}>
       <h2 className={styles.title}>All-Time Attendance</h2>
 
-      {loading ? (
-        <p className={styles.center}>Loading attendance...</p>
-      ) : (
-        <>
-          <div className={styles.card}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>Employee</th>
-                  <th>Email</th>
-                  <th>Date</th>
-                  <th>Status</th>
-                  <th>Working Time</th>
-                  <th>Check In</th>
-                  <th>Check Out</th>
+      {/* Loading Indicator (non-blocking) */}
+      {loading && <p className={styles.center}>Loading...</p>}
+
+      <div className={styles.card}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th>Employee</th>
+              <th>Email</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Working Time</th>
+              <th>Check In</th>
+              <th>Check Out</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {formattedAttendance.length === 0 && !loading ? (
+              <tr>
+                <td colSpan="7" className={styles.center}>
+                  No attendance records
+                </td>
+              </tr>
+            ) : (
+              formattedAttendance.map((item) => (
+                <tr key={item.id}>
+                  <td>{item.name}</td>
+                  <td>{item.email}</td>
+                  <td>{item.date}</td>
+                  <td
+                    className={`${styles.status} ${
+                      item.status === "Present"
+                        ? styles.present
+                        : item.status === "Half Day"
+                          ? styles.halfDay
+                          : item.status === "Leave"
+                            ? styles.leave
+                            : styles.absent
+                    }`}
+                  >
+                    {item.status}
+                  </td>
+                  <td>{item.workingTime}</td>
+                  <td>{item.checkIn}</td>
+                  <td>{item.checkOut}</td>
                 </tr>
-              </thead>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
 
-              <tbody>
-                {attendance.length === 0 ? (
-                  <tr>
-                    <td colSpan="7" className={styles.center}>
-                      No attendance records
-                    </td>
-                  </tr>
-                ) : (
-                  attendance.map((item) => (
-                    <tr key={item._id}>
-                      <td>{item.employee?.fullName || "—"}</td>
-                      <td>{item.employee?.email || "—"}</td>
-                      <td>{new Date(item.date).toLocaleDateString("en-IN")}</td>
-                      <td
-                        className={`${styles.status} ${
-                          item.status === "Present"
-                            ? styles.present
-                            : item.status === "Half Day"
-                              ? styles.halfDay
-                              : item.status === "Leave"
-                                ? styles.leave
-                                : styles.absent
-                        }`}
-                      >
-                        {item.status}
-                      </td>
-                      <td>{formatWorkingTime(item.workingMinutes)}</td>
-                      <td>{formatTime(item.checkInTime)}</td>
-                      <td>{formatTime(item.checkOutTime)}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+      {/* Pagination */}
+      <div className={styles.pagination}>
+        <button
+          disabled={page === 1 || loading}
+          onClick={() => setPage((p) => p - 1)}
+          className={styles.pageButton}
+        >
+          Previous
+        </button>
 
-          {/* Pagination */}
-          <div className={styles.pagination}>
-            <button
-              disabled={page === 1}
-              onClick={() => setPage(page - 1)}
-              className={styles.pageButton}
-            >
-              Previous
-            </button>
+        <span>
+          Page {page} of {totalPages}
+        </span>
 
-            <span>
-              Page {page} of {totalPages}
-            </span>
-
-            <button
-              disabled={page === totalPages}
-              onClick={() => setPage(page + 1)}
-              className={styles.pageButton}
-            >
-              Next
-            </button>
-          </div>
-        </>
-      )}
+        <button
+          disabled={page === totalPages || loading}
+          onClick={() => setPage((p) => p + 1)}
+          className={styles.pageButton}
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 };
