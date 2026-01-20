@@ -23,8 +23,20 @@ export default function AdminHeader({ admin }) {
       </div>
 
       <div className={styles.right}>
-        <Link to="/admin/employees" className={styles.link}>
+        <Link to="/admin/employee-list" className={styles.link}>
           Employees
+        </Link>
+        <Link to="/admin/register-employee" className={styles.link}>
+          Register Employee
+        </Link>
+         <Link to="/admin/all-attendance" className={styles.link}>
+          All Attendance
+        </Link>
+         <Link to="/admin/attendance" className={styles.link}>
+          Today's Attendance
+        </Link>
+        <Link to="/admin/leaves" className={styles.link}>
+          Leaves
         </Link>
 
         <button onClick={handleLogout} className={styles.logout}>

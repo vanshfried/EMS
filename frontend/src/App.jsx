@@ -11,6 +11,7 @@ import EmployeeDetails from "./AdminPages/EmployeeDetails";
 import AdminLayout from "./AdminPages/AdminLayout";
 import AdminAttendance from "./AdminPages/DailyAttendance";
 import AdminAllAttendance from "./AdminPages/AdminAllAttendance";
+import Adminleaves from "./AdminPages/AdminLeaves";
 
 // Employee Pages
 import EmployeeProtectedRoute from "./EmployeePages/EmployeeProtectedRoute";
@@ -19,6 +20,7 @@ import EmployeeLogin from "./EmployeePages/Login";
 import EmployeeDashboard from "./EmployeePages/Dashboard";
 import Profile from "./EmployeePages/Profile";
 import Attendance from "./EmployeePages/Attendance";
+import EmployeeLeaves from "./EmployeePages/EmployeeLeaves";
 
 export default function App() {
   return (
@@ -40,6 +42,7 @@ export default function App() {
               path="/admin/all-attendance"
               element={<AdminAllAttendance />}
             />
+            <Route path="/admin/leaves" element={<Adminleaves />} />
           </Route>
         </Route>
 
@@ -49,6 +52,7 @@ export default function App() {
             <Route path="/" element={<EmployeeDashboard />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/attendance" element={<Attendance />} />
+            <Route path="/leaves" element={<EmployeeLeaves />} />
             {/* future employee routes go here */}
           </Route>
         </Route>

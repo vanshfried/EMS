@@ -74,6 +74,14 @@ export default function AdminDashboard() {
           <h3>Attendance History</h3>
           <p>View attendance for all dates</p>
         </div>
+
+        <div
+          className={styles.toolCard}
+          onClick={() => navigate("/admin/leaves")} 
+        >
+          <h3>Leave Requests</h3>
+          <p>Review and manage leave requests</p>
+        </div>
       </section>
     </div>
   );

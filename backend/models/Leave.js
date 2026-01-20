@@ -8,12 +8,18 @@ const leaveSchema = new Schema(
       required: true,
     },
 
-    fromDate: {
+    leaveType: {
+      type: String,
+      enum: ["Sick", "Casual", "Paid", "Unpaid", "Other"],
+      required: true,
+    },
+
+    startDate: {
       type: Date,
       required: true,
     },
 
-    toDate: {
+    endDate: {
       type: Date,
       required: true,
     },
@@ -21,12 +27,13 @@ const leaveSchema = new Schema(
     reason: {
       type: String,
       required: true,
+      trim: true,
     },
 
     status: {
       type: String,
-      enum: ["pending", "approved", "rejected"],
-      default: "pending",
+      enum: ["Pending", "Approved", "Rejected"],
+      default: "Pending",
     },
 
     appliedAt: {
@@ -34,11 +41,40 @@ const leaveSchema = new Schema(
       default: Date.now,
     },
 
-    reviewedByAdminEmail: {
+    reviewedBy: {
+      type: String, // admin email
+      default: null,
+    },
+
+    reviewedAt: {
+      type: Date,
+      default: null,
+    },
+
+    adminRemarks: {
       type: String,
+      trim: true,
     },
   },
   { timestamps: true }
 );
+
+/* =========================
+   PRE-SAVE HOOK
+========================= */
+leaveSchema.pre("save", function () {
+  // Normalize dates
+  if (this.startDate) {
+    const s = new Date(this.startDate);
+    s.setHours(0, 0, 0, 0);
+    this.startDate = s;
+  }
+
+  if (this.endDate) {
+    const e = new Date(this.endDate);
+    e.setHours(0, 0, 0, 0);
+    this.endDate = e;
+  }
+});
 
 export default model("Leave", leaveSchema);

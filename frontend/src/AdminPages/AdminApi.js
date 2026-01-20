@@ -43,6 +43,30 @@ export const getAllAttendance = ({ page = 1, limit = 20 } = {}) =>
   API.get(`/admin/attendance?page=${page}&limit=${limit}`);
 
 /* =====================
+   LEAVE MANAGEMENT (ADMIN)
+===================== */
+
+// ✅ Get all leave requests
+export const getAllLeaves = () => API.get("/admin/leaves");
+
+// ✅ Get single leave request
+export const getSingleLeave = (leaveId) => API.get(`/admin/leaves/${leaveId}`);
+
+// ✅ Approve / Reject leave
+export const reviewLeave = (leaveId, data) =>
+  API.patch(`/admin/leaves/${leaveId}`, data);
+/*
+  data = {
+    status: "Approved" | "Rejected",
+    adminRemarks?: string
+  }
+*/
+
+// ✅ Get leaves by status (Pending / Approved / Rejected)
+export const getLeavesByStatus = (status) =>
+  API.get(`/admin/leaves/status/${status}`);
+
+/* =====================
    EMPLOYEE REGISTRATION
 ===================== */
 export const registerEmployee = (data) => API.post("/employee/register", data);
