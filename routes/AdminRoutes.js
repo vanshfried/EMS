@@ -210,17 +210,20 @@ router.get("/attendance/today", adminAuth, async (req, res) => {
 ========================= */
 router.get("/attendance", adminAuth, async (req, res) => {
   try {
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 20;
+    const page = Math.max(Number(req.query.page) || 1, 1);
+    const limit = Math.min(Number(req.query.limit) || 20, 50);
     const skip = (page - 1) * limit;
 
-    const attendance = await Attendance.find()
-      .populate("employee", "fullName email")
-      .sort({ date: -1 })
-      .skip(skip)
-      .limit(limit);
+    const [attendance, total] = await Promise.all([
+      Attendance.find({})
+        .sort({ date: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate("employee", "fullName email")
+        .lean(), // 🔥 BIG SPEED BOOST
 
-    const total = await Attendance.countDocuments();
+      Attendance.estimatedDocumentCount(), // 🔥 MUCH faster
+    ]);
 
     res.status(200).json({
       success: true,
@@ -230,12 +233,14 @@ router.get("/attendance", adminAuth, async (req, res) => {
       data: attendance,
     });
   } catch (error) {
+    console.error("Get all attendance error:", error);
     res.status(500).json({
       success: false,
       message: "Server error",
     });
   }
 });
+
 /**
  * =========================
  * ADMIN → UPDATE ATTENDANCE STATUS
