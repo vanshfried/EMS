@@ -8,30 +8,35 @@ const attendanceSchema = new Schema(
       required: true,
     },
 
-    // Store ONLY the date (00:00:00) – critical for queries
+    // ✅ Store ONLY the date (normalized to 00:00:00)
     date: {
       type: Date,
       required: true,
     },
 
+    // ✅ Employee check-in
     checkInTime: {
       type: Date,
       required: true,
     },
 
+    // ✅ Employee check-out (optional)
     checkOutTime: {
       type: Date,
+      default: null,
     },
 
-    workingHours: {
-      type: Number, // stored in hours (e.g. 8.5)
+    // ✅ TOTAL WORKING MINUTES
+    workingMinutes: {
+      type: Number,
       default: 0,
     },
 
+    // ✅ Status controlled by system/admin
     status: {
       type: String,
       enum: ["Present", "Absent", "Half Day", "Leave"],
-      default: "Present",
+      default: "Absent",
     },
 
     remarks: {
@@ -39,38 +44,37 @@ const attendanceSchema = new Schema(
       trim: true,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 /* =========================
-   INDEX (VERY IMPORTANT)
-   Prevent duplicate attendance per day
+   INDEX
+   Prevent duplicate attendance per employee per day
 ========================= */
-attendanceSchema.index(
-  { employee: 1, date: 1 },
-  { unique: true }
-);
+attendanceSchema.index({ employee: 1, date: 1 }, { unique: true });
 
 /* =========================
-   PRE-SAVE HOOKS
+   PRE-SAVE HOOK
 ========================= */
-attendanceSchema.pre("save", function (next) {
-  // Normalize date to midnight (00:00:00)
+attendanceSchema.pre("save", function () {
+  // ✅ Normalize date to midnight (00:00:00)
   if (this.date) {
     const d = new Date(this.date);
     d.setHours(0, 0, 0, 0);
     this.date = d;
   }
 
-  // Calculate working hours
-  if (this.checkInTime && this.checkOutTime) {
-    const diffMs = this.checkOutTime - this.checkInTime;
-    this.workingHours = +(
-      diffMs / (1000 * 60 * 60)
-    ).toFixed(2);
+  // ✅ If employee has checked in, mark Present
+  if (this.checkInTime) {
+    this.status = "Present";
   }
 
-  next();
+  // ✅ Calculate working minutes ONLY if checkout exists
+  if (this.checkInTime && this.checkOutTime) {
+    const diffMs = this.checkOutTime.getTime() - this.checkInTime.getTime();
+
+    this.workingMinutes = diffMs > 0 ? Math.floor(diffMs / (1000 * 60)) : 0;
+  }
 });
 
 export default model("Attendance", attendanceSchema);

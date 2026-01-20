@@ -1,4 +1,3 @@
-// backend/routes/AdminRoutes.js
 import { Router } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -144,9 +143,9 @@ router.get("/employees/:id/attendance", adminAuth, async (req, res) => {
       });
     }
 
-    const attendance = await Attendance.find({ employee: employee._id }).sort({
-      date: -1,
-    });
+    const attendance = await Attendance.find({
+      employee: employee._id,
+    }).sort({ date: -1 });
 
     res.status(200).json({
       success: true,
@@ -186,7 +185,7 @@ router.get("/attendance/today", adminAuth, async (req, res) => {
           employee: emp._id,
           date: today,
           status: "Absent",
-          workingHours: 0,
+          workingMinutes: 0,
           checkInTime: null,
           checkOutTime: null,
         },
@@ -231,6 +230,57 @@ router.get("/attendance", adminAuth, async (req, res) => {
       data: attendance,
     });
   } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+});
+/**
+ * =========================
+ * ADMIN → UPDATE ATTENDANCE STATUS
+ * PATCH /api/admin/attendance/:attendanceId
+ * =========================
+ */
+router.patch("/attendance/:attendanceId", adminAuth, async (req, res) => {
+  try {
+    const { status, remarks } = req.body;
+
+    const allowedStatuses = ["Present", "Absent", "Half Day", "Leave"];
+
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid status value",
+      });
+    }
+
+    const attendance = await Attendance.findById(req.params.attendanceId);
+
+    if (!attendance) {
+      return res.status(404).json({
+        success: false,
+        message: "Attendance record not found",
+      });
+    }
+
+    // ✅ Admin controls status
+    attendance.status = status;
+
+    // ✅ Optional admin remarks
+    if (remarks) {
+      attendance.remarks = remarks;
+    }
+
+    await attendance.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Attendance updated successfully",
+      data: attendance,
+    });
+  } catch (error) {
+    console.error("Admin update attendance error:", error);
     res.status(500).json({
       success: false,
       message: "Server error",
