@@ -19,11 +19,13 @@
 .center {
   text-align: center;
   margin-top: 80px;
-  color: #555;
+  color: #6b7280;
+  font-size: 14px;
 }
 
 .error {
-  color: #c0392b;
+  color: #dc2626;
+  font-weight: 500;
 }
 
 /* =====================
@@ -37,7 +39,7 @@
 .welcome h2 {
   font-size: 26px;
   font-weight: 600;
-  color: #1f2937;
+  color: #111827;
   margin-bottom: 6px;
 }
 
@@ -62,23 +64,21 @@
   padding: 20px;
   border-radius: 14px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .statCard:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+  transform: translateY(-3px);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.08);
 }
 
 .statCard h4 {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: #6b7280;
   margin-bottom: 12px;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
 }
 
 .statCard p {
@@ -91,6 +91,43 @@
 .statCard span {
   font-size: 13px;
   color: #6b7280;
+}
+
+/* =====================
+   ATTENDANCE CIRCLE
+===================== */
+
+.attendanceCircle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.circleText {
+  position: absolute;
+  text-align: center;
+}
+
+.circleText strong {
+  display: block;
+  font-size: 18px;
+  color: #111827;
+}
+
+.circleText span {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* =====================
+   TODAY CARD
+===================== */
+
+.time {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 4px;
 }
 
 /* =====================
@@ -110,19 +147,21 @@
   font-weight: 500;
   border-radius: 10px;
   border: none;
-  background: #2563eb;
-  color: #ffffff;
   cursor: pointer;
-  transition:
-    background 0.2s ease,
-    transform 0.2s ease;
+  color: #ffffff;
+  transition: all 0.2s ease;
 }
 
-.actions button:hover {
+/* Primary */
+.actions button:nth-child(1) {
+  background: #2563eb;
+}
+
+.actions button:nth-child(1):hover {
   background: #1e40af;
-  transform: translateY(-1px);
 }
 
+/* Check Out */
 .actions button:nth-child(2) {
   background: #059669;
 }
@@ -131,6 +170,7 @@
   background: #047857;
 }
 
+/* View Attendance */
 .actions button:nth-child(3) {
   background: #7c3aed;
 }
@@ -139,6 +179,7 @@
   background: #6d28d9;
 }
 
+/* Apply Leave */
 .actions button:nth-child(4) {
   background: #374151;
 }
@@ -147,8 +188,15 @@
   background: #1f2937;
 }
 
+/* Disabled state */
+.actions button:disabled {
+  background: #9ca3af !important;
+  cursor: not-allowed;
+  transform: none;
+}
+
 /* =====================
-   PANELS (Attendance / Leaves)
+   PANELS
 ===================== */
 
 .panel {
@@ -204,7 +252,7 @@
 }
 
 /* =====================
-   STATUS BADGES
+   STATUS BADGES (FIXED)
 ===================== */
 
 .status {
@@ -213,24 +261,31 @@
   text-transform: capitalize;
 }
 
-.status:contains("Present") {
+/* Attendance */
+.Present {
   color: #059669;
 }
 
-.status:contains("Absent") {
+.Absent {
   color: #dc2626;
 }
 
-.status:contains("Pending") {
+/* Leave */
+.Pending {
   color: #d97706;
 }
 
-.status:contains("Approved") {
+.Approved {
   color: #059669;
 }
 
-.status:contains("Rejected") {
+.Rejected {
   color: #dc2626;
+}
+
+/* Today */
+.Not\ Checked\ In {
+  color: #6b7280;
 }
 
 /* =====================
@@ -248,5 +303,9 @@
 
   .statCard p {
     font-size: 24px;
+  }
+
+  .panelHeader h3 {
+    font-size: 16px;
   }
 }

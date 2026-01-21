@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -20,10 +20,11 @@ export default function EmployeeDashboard() {
   const [leaves, setLeaves] = useState([]);
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState("");
 
   /* =====================
-     FETCH DASHBOARD DATA
+     LOAD DASHBOARD
   ===================== */
   const loadDashboard = async () => {
     try {
@@ -37,14 +38,11 @@ export default function EmployeeDashboard() {
           getMyAttendanceSummary(),
         ]);
 
-      // ✅ FIXED: matches backend response
       setEmployee(profileRes.data.data);
-
       setAttendance(attendanceRes.data.attendance || []);
       setLeaves(leavesRes.data.leaves || []);
       setSummary(summaryRes.data);
     } catch (err) {
-      console.error(err);
       setError("Unable to load dashboard data");
     } finally {
       setLoading(false);
@@ -58,14 +56,21 @@ export default function EmployeeDashboard() {
   /* =====================
      DERIVED DATA
   ===================== */
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const todayAttendance = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-  const todayAttendance = attendance.find((a) => {
-    const d = new Date(a.date);
-    d.setHours(0, 0, 0, 0);
-    return d.getTime() === today.getTime();
-  });
+    return attendance.find((a) => {
+      const d = new Date(a.date);
+      d.setHours(0, 0, 0, 0);
+      return d.getTime() === today.getTime();
+    });
+  }, [attendance]);
+
+  const isCheckedInToday = Boolean(todayAttendance?.checkIn);
+  const isCheckedOutToday = Boolean(todayAttendance?.checkOut);
+
+  const todayStatus = todayAttendance?.status || "Not Checked In";
 
   const pendingLeaves = leaves.filter((l) => l.status === "Pending").length;
   const approvedLeaves = leaves.filter((l) => l.status === "Approved").length;
@@ -76,29 +81,34 @@ export default function EmployeeDashboard() {
   const radius = 50;
   const circumference = 2 * Math.PI * radius;
 
-  const progress =
-    summary && summary.presentRatio
-      ? (summary.presentRatio / 100) * circumference
-      : 0;
+  const progress = summary?.presentRatio
+    ? (summary.presentRatio / 100) * circumference
+    : 0;
 
   /* =====================
      ACTIONS
   ===================== */
   const handleCheckIn = async () => {
     try {
+      setActionLoading(true);
       await employeeCheckIn();
       await loadDashboard();
     } catch (err) {
       alert(err.response?.data?.message || "Check-in failed");
+    } finally {
+      setActionLoading(false);
     }
   };
 
   const handleCheckOut = async () => {
     try {
+      setActionLoading(true);
       await employeeCheckOut();
       await loadDashboard();
     } catch (err) {
       alert(err.response?.data?.message || "Check-out failed");
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -106,7 +116,7 @@ export default function EmployeeDashboard() {
      STATES
   ===================== */
   if (loading) {
-    return <p className={styles.center}>Loading dashboard...</p>;
+    return <p className={styles.center}>Loading dashboard…</p>;
   }
 
   if (error) {
@@ -118,17 +128,15 @@ export default function EmployeeDashboard() {
   ===================== */
   return (
     <div className={styles.dashboard}>
-      {/* ===== WELCOME ===== */}
+      {/* WELCOME */}
       <section className={styles.welcome}>
-        <h2>
-          Welcome back{employee?.fullName ? `, ${employee.fullName}` : ""}
-        </h2>
+        <h2>Welcome back{employee?.fullName && `, ${employee.fullName}`}</h2>
         <p>
           {employee?.designation} · {employee?.department}
         </p>
       </section>
 
-      {/* ===== OVERVIEW STATS ===== */}
+      {/* STATS */}
       <section className={styles.statsGrid}>
         {/* ATTENDANCE */}
         <div className={styles.statCard}>
@@ -172,29 +180,48 @@ export default function EmployeeDashboard() {
         {/* LEAVES */}
         <div className={styles.statCard}>
           <h4>Leaves</h4>
-          <p>{approvedLeaves} Approved</p>
+          <p>{approvedLeaves}</p>
           <span>{pendingLeaves} Pending</span>
         </div>
 
         {/* TODAY */}
         <div className={styles.statCard}>
           <h4>Today</h4>
-          <p>
-            {todayAttendance?.status ||
-              (todayAttendance ? "Checked In" : "Not Checked In")}
-          </p>
+          <span className={`${styles.status} ${styles[todayStatus]}`}>
+            {todayStatus}
+          </span>
+          {todayAttendance?.checkIn && (
+            <p className={styles.time}>
+              In: {new Date(todayAttendance.checkIn).toLocaleTimeString()}
+            </p>
+          )}
+          {todayAttendance?.checkOut && (
+            <p className={styles.time}>
+              Out: {new Date(todayAttendance.checkOut).toLocaleTimeString()}
+            </p>
+          )}
         </div>
       </section>
 
-      {/* ===== QUICK ACTIONS ===== */}
+      {/* ACTIONS */}
       <section className={styles.actions}>
-        <button onClick={handleCheckIn}>Check In</button>
-        <button onClick={handleCheckOut}>Check Out</button>
+        <button
+          onClick={handleCheckIn}
+          disabled={isCheckedInToday || actionLoading}
+        >
+          Check In
+        </button>
+        <button
+          onClick={handleCheckOut}
+          disabled={!isCheckedInToday || isCheckedOutToday || actionLoading}
+        >
+          Check Out
+        </button>
         <button onClick={() => navigate("/attendance")}>View Attendance</button>
         <button onClick={() => navigate("/leaves")}>Apply Leave</button>
       </section>
 
-      {/* ===== ATTENDANCE SNAPSHOT ===== */}
+      {/* RECENT ATTENDANCE */}
       <section className={styles.panel}>
         <div className={styles.panelHeader}>
           <h3>Recent Attendance</h3>
@@ -206,12 +233,14 @@ export default function EmployeeDashboard() {
         {attendance.slice(0, 5).map((a) => (
           <div key={a._id} className={styles.row}>
             <span>{new Date(a.date).toDateString()}</span>
-            <span className={styles.status}>{a.status}</span>
+            <span className={`${styles.status} ${styles[a.status]}`}>
+              {a.status}
+            </span>
           </div>
         ))}
       </section>
 
-      {/* ===== LEAVE SNAPSHOT ===== */}
+      {/* LEAVES */}
       <section className={styles.panel}>
         <div className={styles.panelHeader}>
           <h3>Leave Requests</h3>
@@ -225,7 +254,9 @@ export default function EmployeeDashboard() {
             <span>
               {l.leaveType} ({l.startDate} → {l.endDate})
             </span>
-            <span className={styles.status}>{l.status}</span>
+            <span className={`${styles.status} ${styles[l.status]}`}>
+              {l.status}
+            </span>
           </div>
         ))}
       </section>
