@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import {
   getEmployeeProfile,
   getMyAttendance,
+  getMyAttendanceSummary,
   getMyLeaves,
   employeeCheckIn,
   employeeCheckOut,
@@ -17,6 +18,7 @@ export default function EmployeeDashboard() {
   const [employee, setEmployee] = useState(null);
   const [attendance, setAttendance] = useState([]);
   const [leaves, setLeaves] = useState([]);
+  const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -27,16 +29,20 @@ export default function EmployeeDashboard() {
     try {
       setLoading(true);
 
-      const [profileRes, attendanceRes, leavesRes] = await Promise.all([
-        getEmployeeProfile(),
-        getMyAttendance(),
-        getMyLeaves(),
-      ]);
+      const [profileRes, attendanceRes, leavesRes, summaryRes] =
+        await Promise.all([
+          getEmployeeProfile(),
+          getMyAttendance(),
+          getMyLeaves(),
+          getMyAttendanceSummary(),
+        ]);
 
-      // ✅ FIXED RESPONSE HANDLING
-      setEmployee(profileRes.data.employee);
+      // ✅ FIXED: matches backend response
+      setEmployee(profileRes.data.data);
+
       setAttendance(attendanceRes.data.attendance || []);
       setLeaves(leavesRes.data.leaves || []);
+      setSummary(summaryRes.data);
     } catch (err) {
       console.error(err);
       setError("Unable to load dashboard data");
@@ -55,18 +61,25 @@ export default function EmployeeDashboard() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // ✅ DATE-SAFE COMPARISON
   const todayAttendance = attendance.find((a) => {
     const d = new Date(a.date);
     d.setHours(0, 0, 0, 0);
     return d.getTime() === today.getTime();
   });
 
-  const presentDays = attendance.filter((a) => a.status === "Present").length;
-  const absentDays = attendance.filter((a) => a.status === "Absent").length;
-
   const pendingLeaves = leaves.filter((l) => l.status === "Pending").length;
   const approvedLeaves = leaves.filter((l) => l.status === "Approved").length;
+
+  /* =====================
+     ATTENDANCE CIRCLE
+  ===================== */
+  const radius = 50;
+  const circumference = 2 * Math.PI * radius;
+
+  const progress =
+    summary && summary.presentRatio
+      ? (summary.presentRatio / 100) * circumference
+      : 0;
 
   /* =====================
      ACTIONS
@@ -74,7 +87,7 @@ export default function EmployeeDashboard() {
   const handleCheckIn = async () => {
     try {
       await employeeCheckIn();
-      await loadDashboard(); // ✅ refresh data without reload
+      await loadDashboard();
     } catch (err) {
       alert(err.response?.data?.message || "Check-in failed");
     }
@@ -83,7 +96,7 @@ export default function EmployeeDashboard() {
   const handleCheckOut = async () => {
     try {
       await employeeCheckOut();
-      await loadDashboard(); // ✅ refresh data without reload
+      await loadDashboard();
     } catch (err) {
       alert(err.response?.data?.message || "Check-out failed");
     }
@@ -105,9 +118,11 @@ export default function EmployeeDashboard() {
   ===================== */
   return (
     <div className={styles.dashboard}>
-      {/* ===== WELCOME SECTION ===== */}
+      {/* ===== WELCOME ===== */}
       <section className={styles.welcome}>
-        <h2>Welcome back, {employee?.fullName}</h2>
+        <h2>
+          Welcome back{employee?.fullName ? `, ${employee.fullName}` : ""}
+        </h2>
         <p>
           {employee?.designation} · {employee?.department}
         </p>
@@ -115,21 +130,59 @@ export default function EmployeeDashboard() {
 
       {/* ===== OVERVIEW STATS ===== */}
       <section className={styles.statsGrid}>
+        {/* ATTENDANCE */}
         <div className={styles.statCard}>
           <h4>Attendance</h4>
-          <p>{presentDays} Present</p>
-          <span>{absentDays} Absent</span>
+
+          {summary && (
+            <div className={styles.attendanceCircle}>
+              <svg width="120" height="120">
+                <circle
+                  cx="60"
+                  cy="60"
+                  r={radius}
+                  stroke="#e5e7eb"
+                  strokeWidth="10"
+                  fill="none"
+                />
+                <circle
+                  cx="60"
+                  cy="60"
+                  r={radius}
+                  stroke="#22c55e"
+                  strokeWidth="10"
+                  fill="none"
+                  strokeDasharray={circumference}
+                  strokeDashoffset={circumference - progress}
+                  transform="rotate(-90 60 60)"
+                  strokeLinecap="round"
+                />
+              </svg>
+
+              <div className={styles.circleText}>
+                <strong>
+                  {summary.presentDays} / {summary.totalDays}
+                </strong>
+                <span>Days Present</span>
+              </div>
+            </div>
+          )}
         </div>
 
+        {/* LEAVES */}
         <div className={styles.statCard}>
           <h4>Leaves</h4>
           <p>{approvedLeaves} Approved</p>
           <span>{pendingLeaves} Pending</span>
         </div>
 
+        {/* TODAY */}
         <div className={styles.statCard}>
           <h4>Today</h4>
-          <p>{todayAttendance ? todayAttendance.status : "Not Checked In"}</p>
+          <p>
+            {todayAttendance?.status ||
+              (todayAttendance ? "Checked In" : "Not Checked In")}
+          </p>
         </div>
       </section>
 

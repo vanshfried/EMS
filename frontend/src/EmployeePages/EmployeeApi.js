@@ -32,13 +32,15 @@ export const employeeCheckOut = () => API.post("/attendance/check-out");
 // ✅ Get logged-in employee attendance history
 export const getMyAttendance = () => API.get("/attendance/my");
 
+// ✅ Get attendance summary for dashboard
+export const getMyAttendanceSummary = () => API.get("/attendance/my/summary");
+
 /* =====================
    EMPLOYEE LEAVES
 ===================== */
 
 // ✅ Apply for leave
-export const applyLeave = (data) =>
-  API.post("/leaves/apply", data);
+export const applyLeave = (data) => API.post("/leaves/apply", data);
 /*
   data = {
     leaveType,
@@ -49,11 +51,9 @@ export const applyLeave = (data) =>
 */
 
 // ✅ Get logged-in employee leaves
-export const getMyLeaves = () =>
-  API.get("/leaves/my");
+export const getMyLeaves = () => API.get("/leaves/my");
 
 // ✅ Cancel leave (only Pending)
-export const cancelLeave = (leaveId) =>
-  API.delete(`/leaves/${leaveId}`);
+export const cancelLeave = (leaveId) => API.delete(`/leaves/${leaveId}`);
 
 export default API;
