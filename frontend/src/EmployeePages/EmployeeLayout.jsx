@@ -24,7 +24,11 @@ export default function EmployeeLayout() {
   return (
     <>
       <EmployeeHeader employee={employee} />
-      <Outlet />
+
+      {/* 👇 This wrapper creates space below fixed header */}
+      <main style={{ paddingTop: "60px" }}>
+        <Outlet />
+      </main>
     </>
   );
 }
