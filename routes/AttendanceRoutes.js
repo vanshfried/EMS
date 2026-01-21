@@ -1,3 +1,4 @@
+// backend/routes/AttendanceRoutes.js
 import express from "express";
 import employeeAuth from "../middleware/employeeAuth.js";
 import Attendance from "../models/Attendance.js";
@@ -91,6 +92,81 @@ router.post("/check-out", employeeAuth, async (req, res) => {
     console.error("Check-out error:", error);
     res.status(500).json({
       message: "Check-out failed",
+      error: error.message,
+    });
+  }
+});
+/**
+ * ✅ Attendance summary for dashboard
+ * GET /api/attendance/my/summary
+ */
+router.get("/my/summary", employeeAuth, async (req, res) => {
+  try {
+    const employeeId = req.employee._id;
+
+    const summary = await Attendance.aggregate([
+      {
+        $match: {
+          employee: employeeId,
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalDays: { $sum: 1 },
+
+          presentDays: {
+            $sum: {
+              $cond: [{ $eq: ["$status", "Present"] }, 1, 0],
+            },
+          },
+
+          leaveDays: {
+            $sum: {
+              $cond: [{ $eq: ["$status", "Leave"] }, 1, 0],
+            },
+          },
+
+          halfDays: {
+            $sum: {
+              $cond: [{ $eq: ["$status", "Half Day"] }, 1, 0],
+            },
+          },
+
+          absentDays: {
+            $sum: {
+              $cond: [{ $eq: ["$status", "Absent"] }, 1, 0],
+            },
+          },
+        },
+      },
+    ]);
+
+    const data = summary[0] || {
+      totalDays: 0,
+      presentDays: 0,
+      leaveDays: 0,
+      halfDays: 0,
+      absentDays: 0,
+    };
+
+    res.json({
+      totalDays: data.totalDays,
+      presentDays: data.presentDays,
+      presentRatio:
+        data.totalDays > 0
+          ? Number(((data.presentDays / data.totalDays) * 100).toFixed(2))
+          : 0,
+      breakdown: {
+        leaveDays: data.leaveDays,
+        halfDays: data.halfDays,
+        absentDays: data.absentDays,
+      },
+    });
+  } catch (error) {
+    console.error("Attendance summary error:", error);
+    res.status(500).json({
+      message: "Failed to fetch attendance summary",
       error: error.message,
     });
   }
