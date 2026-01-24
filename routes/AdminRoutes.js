@@ -6,6 +6,7 @@ import adminAuth from "../middleware/adminAuth.js";
 import Employee from "../models/Employee.js";
 import Attendance from "../models/Attendance.js";
 import Leave from "../models/Leave.js";
+import OfficeLocation from "../models/OfficeLocation.js";
 
 const router = Router();
 const isProd = process.env.NODE_ENV === "production";
@@ -429,6 +430,84 @@ router.get("/leaves/status/:status", adminAuth, async (req, res) => {
   }
 });
  
+/* =========================
+   ADMIN → SET OFFICE LOCATION
+   POST /api/admin/office-location
+========================= */
+router.post("/office-location", adminAuth, async (req, res) => {
+  try {
+    const { name, latitude, longitude, allowedRadiusMeters } = req.body;
+
+    if (
+      !name ||
+      typeof latitude !== "number" ||
+      typeof longitude !== "number"
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Name, latitude and longitude are required",
+      });
+    }
+
+    // 🔒 Deactivate any existing active office
+    await OfficeLocation.updateMany(
+      { isActive: true },
+      { $set: { isActive: false } }
+    );
+
+    // ✅ Create new active office
+    const office = await OfficeLocation.create({
+      name,
+      coordinates: {
+        type: "Point",
+        coordinates: [longitude, latitude], // IMPORTANT: lng first
+      },
+      allowedRadiusMeters: allowedRadiusMeters || 100,
+      isActive: true,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Office location set successfully",
+      data: office,
+    });
+  } catch (error) {
+    console.error("Set office location error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to set office location",
+    });
+  }
+});
+
+/* =========================
+   ADMIN → GET OFFICE LOCATION
+   GET /api/admin/office-location
+========================= */
+router.get("/office-location", adminAuth, async (req, res) => {
+  try {
+    const office = await OfficeLocation.findOne({ isActive: true });
+
+    if (!office) {
+      return res.status(404).json({
+        success: false,
+        message: "No office location configured",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: office,
+    });
+  } catch (error) {
+    console.error("Get office location error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch office location",
+    });
+  }
+});
+
 
 
 /* =====================
