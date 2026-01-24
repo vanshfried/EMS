@@ -67,6 +67,25 @@ export const getLeavesByStatus = (status) =>
   API.get(`/admin/leaves/status/${status}`);
 
 /* =====================
+   OFFICE LOCATION (ADMIN)
+===================== */
+
+// ✅ Set / Update office location
+export const setOfficeLocation = (data) =>
+  API.post("/admin/office-location", data);
+/*
+  data = {
+    name: string,
+    latitude: number,
+    longitude: number,
+    allowedRadiusMeters?: number // optional (defaults to 100)
+  }
+*/
+
+// ✅ Get current office location
+export const getOfficeLocation = () => API.get("/admin/office-location");
+
+/* =====================
    EMPLOYEE REGISTRATION
 ===================== */
 export const registerEmployee = (data) => API.post("/employee/register", data);

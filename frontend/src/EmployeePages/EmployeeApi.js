@@ -24,7 +24,7 @@ export const employeeLogout = () => API.post("/employee/logout");
 ===================== */
 
 // ✅ Employee check-in
-export const employeeCheckIn = () => API.post("/attendance/check-in");
+export const employeeCheckIn = (data) => API.post("/attendance/check-in", data);
 
 // ✅ Employee check-out
 export const employeeCheckOut = () => API.post("/attendance/check-out");

@@ -38,6 +38,9 @@ export default function AdminHeader({ admin }) {
         <Link to="/admin/leaves" className={styles.link}>
           Leaves
         </Link>
+        <Link to="/admin/office-location" className={styles.link}>
+          Office Location
+        </Link>
 
         <button onClick={handleLogout} className={styles.logout}>
           Logout

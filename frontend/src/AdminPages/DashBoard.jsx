@@ -82,6 +82,13 @@ export default function AdminDashboard() {
           <h3>Leave Requests</h3>
           <p>Review and manage leave requests</p>
         </div>
+        <div
+          className={styles.toolCard}
+          onClick={() => navigate("/admin/office-location")} 
+        >
+          <h3>Office Location</h3>
+          <p>Set and manage office location settings</p>
+        </div>
       </section>
     </div>
   );

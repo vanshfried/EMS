@@ -54,6 +54,9 @@ const Attendance = () => {
   const [todayAttendance, setTodayAttendance] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  /* =====================
+     FETCH ATTENDANCE
+  ===================== */
   const fetchAttendance = async () => {
     try {
       const res = await getMyAttendance();
@@ -61,7 +64,6 @@ const Attendance = () => {
 
       setAttendance(records);
 
-      // ✅ Backend-aligned "today" detection
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
@@ -81,18 +83,49 @@ const Attendance = () => {
     fetchAttendance();
   }, []);
 
-  const handleCheckIn = async () => {
-    try {
-      setLoading(true);
-      await employeeCheckIn();
-      await fetchAttendance();
-    } catch (error) {
-      alert(error.response?.data?.message || "Check-in failed");
-    } finally {
-      setLoading(false);
+  /* =====================
+     CHECK-IN (LIVE GPS)
+  ===================== */
+  const handleCheckIn = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser");
+      return;
     }
+
+    setLoading(true);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          await employeeCheckIn({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          });
+
+          await fetchAttendance();
+        } catch (error) {
+          alert(error.response?.data?.message || "Check-in failed");
+        } finally {
+          setLoading(false);
+        }
+      },
+      () => {
+        alert(
+          "Location access is required to check in. Please allow location access.",
+        );
+        setLoading(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0, // 🔥 FORCE LIVE LOCATION (NO CACHED GPS)
+      },
+    );
   };
 
+  /* =====================
+     CHECK-OUT
+  ===================== */
   const handleCheckOut = async () => {
     try {
       setLoading(true);
@@ -115,7 +148,7 @@ const Attendance = () => {
           onClick={handleCheckIn}
           disabled={loading || todayAttendance?.checkInTime}
         >
-          Check In
+          {loading ? "Checking location..." : "Check In"}
         </button>
 
         <button
