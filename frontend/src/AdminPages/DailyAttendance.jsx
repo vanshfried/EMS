@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getTodayAttendance } from "./AdminApi";
-import styles from "./Adminstyles/DailyAttendance.module.css";
+import styles from "./AdminStyles/DailyAttendance.module.css";
 
 /* =====================
    HELPERS

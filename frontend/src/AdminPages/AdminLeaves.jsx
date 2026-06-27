@@ -4,7 +4,7 @@ import {
   reviewLeave,
   getLeavesByStatus,
 } from "./AdminApi";
-import styles from "./Adminstyles/AdminLeaves.module.css";
+import styles from "./AdminStyles/AdminLeaves.module.css";
 
 const AdminLeaves = () => {
   const [leaves, setLeaves] = useState([]);
