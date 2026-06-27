@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getAllEmployees, getTodayAttendance } from "./AdminApi";
-import styles from "./AdminStyles/EmployeeList.module.css";
+import styles from "./Adminstyles/EmployeeList.module.css";
 import { Link } from "react-router-dom";
 
 export default function EmployeeList() {

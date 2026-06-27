@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API from "./AdminApi";
-import styles from "./AdminStyles/EmployeeDetails.module.css";
+import styles from "./Adminstyles/EmployeeDetails.module.css";
 
 /* =====================
    HELPERS

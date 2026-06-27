@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { getAllAttendance } from "../AdminPages/AdminApi";
-import styles from "./AdminStyles/AdminAllAttendance.module.css";
+import styles from "./Adminstyles/AdminAllAttendance.module.css";
 
 /* =====================
    HELPERS

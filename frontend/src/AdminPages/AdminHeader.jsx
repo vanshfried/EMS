@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { adminLogout } from "./AdminApi";
-import styles from "./AdminStyles/AdminHeader.module.css";
+import styles from "./Adminstyles/AdminHeader.module.css";
 
 export default function AdminHeader({ admin }) {
   const navigate = useNavigate();
