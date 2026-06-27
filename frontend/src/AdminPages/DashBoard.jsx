@@ -1,20 +1,18 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAdminProfile, adminLogout } from "./AdminApi";
+import { getAdminProfile } from "./AdminApi";
 import styles from "./AdminStyles/AdminDashboard.module.css";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await getAdminProfile();
-        setEmail(res.data.data.email);
+        await getAdminProfile();
       } catch {
         setError("Unauthorized");
         navigate("/admin/login");
@@ -25,14 +23,6 @@ export default function AdminDashboard() {
 
     fetchProfile();
   }, [navigate]);
-
-  const handleLogout = async () => {
-    try {
-      await adminLogout();
-    } finally {
-      navigate("/admin/login");
-    }
-  };
 
   if (loading) return <p className={styles.center}>Loading dashboard…</p>;
   if (error) return <p className={styles.error}>{error}</p>;

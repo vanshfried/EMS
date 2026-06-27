@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   getAllLeaves,
   reviewLeave,
@@ -12,7 +12,7 @@ const AdminLeaves = () => {
   const [filter, setFilter] = useState("All");
   const [remarks, setRemarks] = useState({});
 
-  const fetchLeaves = async () => {
+  const fetchLeaves = useCallback(async () => {
     try {
       setLoading(true);
       const res =
@@ -26,11 +26,11 @@ const AdminLeaves = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filter]);
 
   useEffect(() => {
     fetchLeaves();
-  }, [filter]);
+  }, [fetchLeaves]);
 
   const handleAction = async (leaveId, status) => {
     try {
