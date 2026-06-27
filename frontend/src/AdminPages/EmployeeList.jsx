@@ -25,6 +25,7 @@ export default function EmployeeList() {
 
         setEmployees(empRes.data.data);
         setAttendanceMap(map);
+      // eslint-disable-next-line no-unused-vars
       } catch (err) {
         setError("Failed to load employees");
       } finally {
