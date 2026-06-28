@@ -3,6 +3,8 @@ import {
   employeeCheckIn,
   employeeCheckOut,
   getMyAttendance,
+  requestRemoteWork,
+  getMyRemoteRequests,
 } from "./EmployeeApi";
 
 /* =====================
@@ -53,6 +55,9 @@ const Attendance = () => {
   const [attendance, setAttendance] = useState([]);
   const [todayAttendance, setTodayAttendance] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [requestDate, setRequestDate] = useState("");
+  const [requestReason, setRequestReason] = useState("");
+  const [remoteRequests, setRemoteRequests] = useState([]);
 
   /* =====================
      FETCH ATTENDANCE
@@ -78,9 +83,18 @@ const Attendance = () => {
       console.error("Fetch attendance error:", error);
     }
   };
+  const fetchRemoteRequests = async () => {
+    try {
+      const res = await getMyRemoteRequests();
+      setRemoteRequests(res.data.requests || []);
+    } catch (error) {
+      console.error("Fetch remote requests error:", error);
+    }
+  };
 
   useEffect(() => {
     fetchAttendance();
+    fetchRemoteRequests();
   }, []);
 
   /* =====================
@@ -137,6 +151,33 @@ const Attendance = () => {
       setLoading(false);
     }
   };
+  const handleRemoteRequest = async () => {
+    if (!requestDate || !requestReason.trim()) {
+      return alert("Please select a date and enter a reason.");
+    }
+
+    try {
+      setLoading(true);
+
+      await requestRemoteWork({
+        date: requestDate,
+        reason: requestReason,
+      });
+
+      alert("Remote work request submitted.");
+
+      setRequestDate("");
+      setRequestReason("");
+
+      await fetchRemoteRequests();
+    } catch (error) {
+      alert(
+        error.response?.data?.message || "Failed to submit remote work request",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div style={{ padding: "20px" }}>
@@ -160,6 +201,79 @@ const Attendance = () => {
         >
           Check Out
         </button>
+      </div>
+      {/* =====================
+   REMOTE WORK REQUEST
+===================== */}
+      <div
+        style={{
+          marginBottom: "20px",
+          border: "1px solid #ccc",
+          padding: "15px",
+          borderRadius: "8px",
+        }}
+      >
+        <h3>🏠 Request Remote Work</h3>
+
+        <div style={{ marginBottom: "10px" }}>
+          <label>Date:</label>
+          <br />
+          <input
+            type="date"
+            value={requestDate}
+            onChange={(e) => setRequestDate(e.target.value)}
+          />
+        </div>
+
+        <div style={{ marginBottom: "10px" }}>
+          <label>Reason:</label>
+          <br />
+          <textarea
+            rows="3"
+            style={{ width: "100%" }}
+            value={requestReason}
+            onChange={(e) => setRequestReason(e.target.value)}
+            placeholder="Why do you need to work remotely?"
+          />
+        </div>
+
+        <button onClick={handleRemoteRequest} disabled={loading}>
+          Submit Request
+        </button>
+      </div>
+      {/* =====================
+   MY REMOTE WORK REQUESTS
+===================== */}
+      <div style={{ marginBottom: "20px" }}>
+        <h3>📋 My Remote Work Requests</h3>
+
+        <table border="1" cellPadding="10" width="100%">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Reason</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {remoteRequests.length === 0 ? (
+              <tr>
+                <td colSpan="3" align="center">
+                  No remote work requests
+                </td>
+              </tr>
+            ) : (
+              remoteRequests.map((request) => (
+                <tr key={request._id}>
+                  <td>{getISTDateString(request.date)}</td>
+                  <td>{request.reason}</td>
+                  <td>{request.status}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
 
       {/* TODAY STATUS */}

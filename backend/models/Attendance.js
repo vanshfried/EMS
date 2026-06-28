@@ -38,6 +38,11 @@ const attendanceSchema = new Schema(
       enum: ["Present", "Absent", "Half Day", "Leave"],
       default: "Absent",
     },
+    attendanceMode: {
+      type: String,
+      enum: ["Office", "Remote"],
+      default: "Office",
+    },
 
     remarks: {
       type: String,

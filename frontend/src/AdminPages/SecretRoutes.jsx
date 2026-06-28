@@ -11,7 +11,7 @@ export default function SecretRoute() {
       try {
         await getAdminProfile(); // 🔥 cookie auto-sent
         setAuthorized(true);
-      } catch (err) {
+      } catch {
         setAuthorized(false);
       } finally {
         setLoading(false);

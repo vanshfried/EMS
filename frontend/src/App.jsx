@@ -13,6 +13,7 @@ import AdminAttendance from "./AdminPages/DailyAttendance";
 import AdminAllAttendance from "./AdminPages/AdminAllAttendance";
 import Adminleaves from "./AdminPages/AdminLeaves";
 import OfficeLocation from "./AdminPages/OfficeLocation";
+import RemoteWorkRequests from "./AdminPages/RemoteWorkRequests";
 // Employee Pages
 import EmployeeProtectedRoute from "./EmployeePages/EmployeeProtectedRoute";
 import EmployeeLayout from "./EmployeePages/EmployeeLayout";
@@ -44,6 +45,7 @@ export default function App() {
             />
             <Route path="/admin/leaves" element={<Adminleaves />} />
             <Route path="/admin/office-location" element={<OfficeLocation />} />
+            <Route path="/admin/remote-work-requests" element={<RemoteWorkRequests />} />
             {/* future admin routes go here */}
           </Route>
         </Route>

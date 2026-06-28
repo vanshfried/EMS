@@ -29,6 +29,19 @@ export const employeeCheckIn = (data) => API.post("/attendance/check-in", data);
 // ✅ Employee check-out
 export const employeeCheckOut = () => API.post("/attendance/check-out");
 
+// ✅ Request remote work
+export const requestRemoteWork = (data) =>
+  API.post("/attendance/request-remote-work", data);
+/*
+  data = {
+    date,
+    reason
+  }
+*/
+
+// ✅ Get my remote work requests
+export const getMyRemoteRequests = () => API.get("/attendance/my-requests");
+
 // ✅ Get logged-in employee attendance history
 export const getMyAttendance = () => API.get("/attendance/my");
 

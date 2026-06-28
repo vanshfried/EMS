@@ -11,7 +11,7 @@ import employeeRoutes from "./routes/EmployeeRoutes.js";
 import attendanceRoutes from "./routes/AttendanceRoutes.js";
 // Leave routes
 import leaveRoutes from "./routes/leaveRoutes.js";
-
+import adminAttendanceRequestRoutes from "./routes/AdminAttendanceRequestRoutes.js";
 dotenv.config();
 
 const app = express();
@@ -47,6 +47,8 @@ app.use("/employee", employeeRoutes);
 app.use("/attendance", attendanceRoutes);
 // Leave routes
 app.use("/leaves", leaveRoutes);
+// Admin Attendance Request routes
+app.use("/admin/attendance-requests", adminAttendanceRequestRoutes);
 
 // Health check
 app.get("/", (req, res) => {

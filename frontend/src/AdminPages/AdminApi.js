@@ -39,8 +39,26 @@ export const getEmployeeAttendance = (employeeId) =>
 export const getTodayAttendance = () => API.get("/admin/attendance/today");
 
 // All attendance (paginated)
-export const getAllAttendance = ({ page = 1, limit = 20 } = {}) =>
+export const getAllAttendance = ({ page = 1, limit = 10 } = {}) =>
   API.get(`/admin/attendance?page=${page}&limit=${limit}`);
+
+// =====================
+// REMOTE WORK REQUESTS
+// =====================
+
+// Get all requests
+export const getRemoteWorkRequests = () =>
+  API.get("/admin/attendance-requests");
+
+// Approve request
+export const approveRemoteWorkRequest = (id) =>
+  API.patch(`/admin/attendance-requests/${id}/approve`);
+
+// Reject request
+export const rejectRemoteWorkRequest = (id, rejectionReason = "") =>
+  API.patch(`/admin/attendance-requests/${id}/reject`, {
+    rejectionReason,
+  });
 
 /* =====================
    LEAVE MANAGEMENT (ADMIN)

@@ -79,6 +79,13 @@ export default function AdminDashboard() {
           <h3>Office Location</h3>
           <p>Set and manage office location settings</p>
         </div>
+        <div
+          className={styles.toolCard}
+          onClick={() => navigate("/admin/remote-work-requests")} 
+        >
+          <h3>Remote Work Requests</h3>
+          <p>Review and manage remote work requests</p>
+        </div>
       </section>
     </div>
   );
