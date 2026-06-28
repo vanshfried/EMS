@@ -2,7 +2,7 @@ import express from "express";
 import employeeAuth from "../middleware/employeeAuth.js";
 import Attendance from "../models/Attendance.js";
 import OfficeLocation from "../models/OfficeLocation.js";
-
+import AttendanceRequest from "../models/AttendanceRequest.js";
 const router = express.Router();
 
 /* =========================
@@ -26,18 +26,14 @@ function getDistanceInMeters(lat1, lon1, lat2, lon2) {
    ✅ Employee Check-in
    POST /api/attendance/check-in
 ========================= */
+/* =========================
+   ✅ Employee Check-in
+   POST /attendance/check-in
+========================= */
 router.post("/check-in", employeeAuth, async (req, res) => {
   try {
     const employeeId = req.employee._id;
     const { latitude, longitude } = req.body || {};
-
-
-    // ❌ Location required
-    if (!latitude || !longitude) {
-      return res.status(400).json({
-        message: "Location permission is required to check in",
-      });
-    }
 
     // Normalize today to midnight
     const today = new Date();
@@ -52,6 +48,42 @@ router.post("/check-in", employeeAuth, async (req, res) => {
     if (existingAttendance) {
       return res.status(400).json({
         message: "Already checked in today",
+      });
+    }
+
+    /* ===================================
+       ✅ Check for approved remote request
+    ==================================== */
+    const approvedRemoteRequest = await AttendanceRequest.findOne({
+      employee: employeeId,
+      date: today,
+      type: "Remote Work",
+      status: "Approved",
+    });
+
+    // ✅ Remote check-in (Skip GPS verification)
+    if (approvedRemoteRequest) {
+      const attendance = await Attendance.create({
+        employee: employeeId,
+        date: today,
+        checkInTime: new Date(),
+        attendanceMode: "Remote",
+      });
+
+      return res.status(201).json({
+        message: "Remote check-in successful",
+        attendance,
+      });
+    }
+
+    /* ===================================
+       OFFICE CHECK-IN (Existing Logic)
+    ==================================== */
+
+    // ❌ Location required
+    if (!latitude || !longitude) {
+      return res.status(400).json({
+        message: "Location permission is required to check in",
       });
     }
 
@@ -71,22 +103,23 @@ router.post("/check-in", employeeAuth, async (req, res) => {
       latitude,
       longitude,
       officeLat,
-      officeLng,
+      officeLng
     );
 
     // ❌ Outside office radius
     if (distance > office.allowedRadiusMeters) {
       return res.status(403).json({
         message: "You must be inside the office to check in",
-        distance: Math.round(distance), // optional debug info
+        distance: Math.round(distance),
       });
     }
 
-    // ✅ Create attendance (status & minutes handled by schema)
+    // ✅ Office attendance
     const attendance = await Attendance.create({
       employee: employeeId,
       date: today,
       checkInTime: new Date(),
+      attendanceMode: "Office",
     });
 
     res.status(201).json({
@@ -95,6 +128,7 @@ router.post("/check-in", employeeAuth, async (req, res) => {
     });
   } catch (error) {
     console.error("Check-in error:", error);
+
     res.status(500).json({
       message: "Check-in failed",
       error: error.message,
@@ -150,6 +184,92 @@ router.post("/check-out", employeeAuth, async (req, res) => {
   }
 });
 
+/* =========================
+   🏠 Request Remote Work
+   POST /attendance/request-remote-work
+========================= */
+router.post("/request-remote-work", employeeAuth, async (req, res) => {
+  try {
+    const employeeId = req.employee._id;
+    const { date, reason } = req.body;
+
+    // Validate
+    if (!date || !reason?.trim()) {
+      return res.status(400).json({
+        message: "Date and reason are required",
+      });
+    }
+
+    // Normalize requested date
+    const requestDate = new Date(date);
+    requestDate.setHours(0, 0, 0, 0);
+
+    // Tomorrow (today not allowed)
+    const tomorrow = new Date();
+    tomorrow.setHours(0, 0, 0, 0);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    if (requestDate < tomorrow) {
+      return res.status(400).json({
+        message: "Remote work can only be requested from tomorrow onwards",
+      });
+    }
+
+    // Prevent duplicate request
+    const existingRequest = await AttendanceRequest.findOne({
+      employee: employeeId,
+      date: requestDate,
+      type: "Remote Work",
+    });
+
+    if (existingRequest) {
+      return res.status(400).json({
+        message: "You have already submitted a request for this date",
+      });
+    }
+
+    const request = await AttendanceRequest.create({
+      employee: employeeId,
+      date: requestDate,
+      reason: reason.trim(),
+    });
+
+    res.status(201).json({
+      message: "Remote work request submitted successfully",
+      request,
+    });
+  } catch (error) {
+    console.error("Remote work request error:", error);
+
+    res.status(500).json({
+      message: "Failed to submit remote work request",
+      error: error.message,
+    });
+  }
+});
+
+/* =========================
+   📋 My Remote Work Requests
+   GET /attendance/my-requests
+========================= */
+router.get("/my-requests", employeeAuth, async (req, res) => {
+  try {
+    const requests = await AttendanceRequest.find({
+      employee: req.employee._id,
+    }).sort({ date: -1 });
+
+    res.json({
+      requests,
+    });
+  } catch (error) {
+    console.error("Fetch remote work requests error:", error);
+
+    res.status(500).json({
+      message: "Failed to fetch remote work requests",
+      error: error.message,
+    });
+  }
+});
 /* =========================
    ✅ Attendance Summary
    GET /api/attendance/my/summary
